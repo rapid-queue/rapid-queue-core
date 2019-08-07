@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+    <Appenders>
+        <Console name="CONSOLE">
+            <PatternLayout pattern="[%d{MM-dd HH:mm:ss.SSS} %-5level %c{3}]: %msg%xEx%n"/>
+        </Console>
+    </Appenders>
+
+    <Loggers>
+        <Logger name="io.github.rapid.queue.core" level="DEBUG" additivity="false">
+            <AppenderRef ref="CONSOLE"/>
+        </Logger>
+        <Root level="WARN">
+            <AppenderRef ref="CONSOLE"/>
+        </Root>
+    </Loggers>
+</configuration>

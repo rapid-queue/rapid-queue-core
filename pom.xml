@@ -8,7 +8,36 @@
     <artifactId>rapid-queue-core</artifactId>
     <version>0.0.1</version>
 
+    <parent>
+        <groupId>org.sonatype.oss</groupId>
+        <artifactId>oss-parent</artifactId>
+        <version>7</version>
+    </parent>
     <name>rapid-queue-core</name>
+    <description>High performance, low latency, persistent, in-process queue</description>
+    <url>https://rapid-queue.github.io/</url>
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <scm>
+        <tag>master</tag>
+        <url>https://github.com/rapid-queue/rapid-queue-core.git</url>
+        <connection>scm:git:git@github.com:rapid-queue/rapid-queue-core.git</connection>
+        <developerConnection>scm:git:git@github.com:rapid-queue/rapid-queue-core.git</developerConnection>
+    </scm>
+
+    <developers>
+        <developer>
+            <name>rapid-queue</name>
+            <email>rapidqueue.dev@gmail.com</email>
+        </developer>
+    </developers>
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -62,7 +91,16 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-
-    <build>
-    </build>
+    <distributionManagement>
+        <repository>
+            <id>sonatype-oss</id>
+            <name>Nexus Release Repository</name>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
+        </repository>
+        <snapshotRepository>
+            <id>sonatype-oss</id>
+            <name>Sonatype Nexus Snapshots</name>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
 </project>

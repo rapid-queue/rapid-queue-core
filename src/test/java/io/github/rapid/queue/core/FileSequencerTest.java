@@ -102,9 +102,8 @@ public class FileSequencerTest {
                             AtomicInteger atomicInteger = checkI.get(finalI);
                             int last = message - 1;
                             if (last != atomicInteger.get()) {
-                                System.out.println("ERROR。线程：" + finalI + ", 期望:" + atomicInteger.get() + ", offset:" + eventMessage.getOffset() + " | 内容：" + body);
+                                System.out.println("ERROR。T:" + finalI + ", E:" + atomicInteger.get() + ", offset:" + eventMessage.getOffset() + " | C:" + body);
                             } else {
-//                                System.out.println("线程：" + finalI + ", 期望:" + atomicInteger.get() + ", offset:" + eventMessage.getOffset() + " | 内容：" + body);
                             }
                             atomicInteger.set(message);
                         }

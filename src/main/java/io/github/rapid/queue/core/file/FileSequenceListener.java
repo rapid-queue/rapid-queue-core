@@ -31,9 +31,7 @@ final class FileSequenceListener implements SequenceListener {
     }
 
     private final Executor executor = Executors.newFixedThreadPool(10);
-    //这里一定要过滤的就是前后顺序，不保证数据的完整性，这里会尽力保证完整性但是完整性和顺序性的校验是应用做的，不是这里做的
 
-    //读文件，直到读到比内存中的数据要大的时候，再从内存页中读取，内存页中读取的时候会锁住写入的数据，这样就可以安全了
     @Override
     public void start(@Nullable Long offset, MessageCallback messageCallback) {
         Objects.requireNonNull(messageCallback, "messageListener can not null");
@@ -64,7 +62,6 @@ final class FileSequenceListener implements SequenceListener {
                     shouldReadFile = false;
                 } else if (circularReaderStatus.equals(FileSequencerCircularCache.ReaderStatus.WITHIN)) {
                     for (EventMessage message : circularPageFullReader) {
-                        //这里不能先缓存再处理，因为写入的线程会写入新的数据
                         if (stop.get()) return;
                         onMessage(message);
                         if (stop.get()) return;
@@ -73,7 +70,6 @@ final class FileSequenceListener implements SequenceListener {
                     active.set(true);
                     shouldReadFile = false;
                 } else if (circularReaderStatus.equals(FileSequencerCircularCache.ReaderStatus.EMPTY)) {
-                    //如果page中是空的那么就是从启动开始没有数据进入，那么必须要读文件，如果读过文件了，还是空的那么就可以放行了
                     if (!shouldReadFile) {
                         shouldReadFile = true;
                     } else {
@@ -127,7 +123,6 @@ final class FileSequenceListener implements SequenceListener {
             return;
         }
         if (!message.isDurable()) {
-            //这不是一个持久化的信息
             messageCallback.onMessage(message);
         } else {
             try {

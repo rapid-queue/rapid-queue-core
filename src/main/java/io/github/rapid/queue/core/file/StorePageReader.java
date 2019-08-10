@@ -37,7 +37,6 @@ final class StorePageReader implements AutoCloseable, Closeable {
     }
 
     private void open() throws IOException {
-        //这里处理文件系统的
         File diskFile = storeMessageHelper.getDiskFile(pageId);
         if (!diskFile.exists()) {
             throw new ImperfectException(pageId, "file not exists");
@@ -96,11 +95,9 @@ final class StorePageReader implements AutoCloseable, Closeable {
                         }
                         int len = circularBuffer.remaining_OneWay();
                         if (alreadyReadSize + len > readLength) {
-                            //这里是因为不够满一桶了
                             len = readLength - alreadyReadSize;
                         }
                         if (len == 0) {
-                            //没有可以读的了
                             if (circularBuffer.getLength() > 0) {
                                 throw new ImperfectException(pageId, "file is imperfect bufferRemind");
                             }
@@ -113,7 +110,6 @@ final class StorePageReader implements AutoCloseable, Closeable {
                             StorePageReader.this.storeMessageHelper.frameCodec.decode(circularBuffer, messageFrames);
                             alreadyReadSize = alreadyReadSize + read;
                         } else {
-                            //这里是因为没有可以读的了
                             if (circularBuffer.getLength() > 0) {
                                 throw new ImperfectException(pageId, "file is imperfect bufferRemind");
                             }

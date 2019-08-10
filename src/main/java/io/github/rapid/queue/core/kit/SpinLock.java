@@ -5,14 +5,8 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class SpinLock implements SimpleLock {
 
-    /**
-     * 锁持有线程, null表示锁未被任何线程持有
-     */
     private final AtomicReference<Thread> owner = new AtomicReference<>();
 
-    /**
-     * owner持有锁次数
-     */
     private int holdCount;
 
     @Override
@@ -20,7 +14,7 @@ public class SpinLock implements SimpleLock {
         final AtomicReference<Thread> owner = this.owner;
 
         final Thread current = Thread.currentThread();
-        if (owner.get() == current) { // 当前线程已持有锁, 增加持有计数即可
+        if (owner.get() == current) {
             ++holdCount;
             return;
         }
@@ -45,12 +39,10 @@ public class SpinLock implements SimpleLock {
         final long start = System.nanoTime();
         final long timeoutNanos = TimeUnit.MILLISECONDS.toNanos(timeMillis);
         while (!owner.compareAndSet(null, current)) {
-            // 响应中断
             if (current.isInterrupted()) {
                 current.interrupt();
                 return false;
             }
-            // 判断是否超时
             long elapsed = System.nanoTime() - start;
             if (elapsed >= timeoutNanos) {
                 return false;
@@ -69,7 +61,6 @@ public class SpinLock implements SimpleLock {
         if (owner.get() != current) {
             throw new IllegalMonitorStateException();
         }
-        // 持有多少次, 就必须释放多少次
         if (--holdCount == 0) {
             owner.set(null);
         }

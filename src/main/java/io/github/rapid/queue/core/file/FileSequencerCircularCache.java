@@ -36,13 +36,11 @@ final class FileSequencerCircularCache {
     private final FullReader fullReader = new FullReader();
 
     FullReader createReader(@Nullable Long offset) {
-        //计算头尾
         EventMessage tailMsg;
         int head;
         int tail;
         if (nextWritePos == 0) {
             if (flipped) {
-                //写的转圈了
                 tailMsg = buffer[maxIndex];
                 head = nextWritePos;
                 tail = maxIndex;
@@ -54,7 +52,6 @@ final class FileSequencerCircularCache {
         } else if (nextWritePos > 0) {
             tailMsg = buffer[nextWritePos - 1];
             if (flipped) {
-                //写的转圈了
                 head = nextWritePos;
                 tail = nextWritePos - 1;
             } else {
@@ -74,7 +71,6 @@ final class FileSequencerCircularCache {
                     .setTail(tail);
         } else {
             if (offset == null) {
-                //这里是因为缓存里都有数据了，那么文件里肯定也有数据，那么就让去文件里查询
                 return fullReader
                         .setStatus(ReaderStatus.LESS)
                         .setHead(head)

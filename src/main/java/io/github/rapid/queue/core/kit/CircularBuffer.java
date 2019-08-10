@@ -7,7 +7,7 @@ public final class CircularBuffer {
     private int nextReadPos = 0;
     private int nextWritePos = 0;
     private int readPosMark;
-    private boolean flipped = false; //用来标记缓存区域是否已经被完整写入并读取过一轮，默认没有
+    private boolean flipped = false;
 
     public CircularBuffer(int capacity) {
         this.capacity = capacity;
@@ -24,7 +24,6 @@ public final class CircularBuffer {
             return capacity - nextWritePos;
         } else if (nextReadPos == nextWritePos) {
             if (flipped) {
-                //如果是写了一圈了
                 return 0;
             } else {
                 return capacity - nextWritePos;
@@ -39,7 +38,6 @@ public final class CircularBuffer {
             return capacity - (nextWritePos - nextReadPos);
         } else if (nextReadPos == nextWritePos) {
             if (flipped) {
-                //如果是写了一圈了
                 return 0;
             } else {
                 return capacity;
@@ -156,7 +154,6 @@ public final class CircularBuffer {
         if (length >= readLen) {
             byte[] rst = new byte[readLen];
             if (this.nextWritePos > this.nextReadPos) {
-                //这个是没有转圈写，这里因为length中判断的足够读的
                 System.arraycopy(buffer, nextReadPos, rst, 0, readLen);
                 nextReadPos = nextReadPos + readLen;
                 return rst;
@@ -174,7 +171,6 @@ public final class CircularBuffer {
                         this.nextReadPos = next;
                     }
                 } else {
-                    //这里需要读取到最后，并且读到一开始
                     System.arraycopy(buffer, nextReadPos, rst, 0, oneWayLen);
                     int remaining = readLen - oneWayLen;
                     System.arraycopy(buffer, 0, rst, oneWayLen, remaining);

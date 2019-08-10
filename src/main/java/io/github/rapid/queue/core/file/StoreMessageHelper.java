@@ -53,10 +53,8 @@ final class StoreMessageHelper implements AutoCloseable {
 
         List<Integer> files = dumpDiskFile();
         if (files.size() == 0) {
-            //新建的
             this.writer = StorePageWriter.createOpened(StoreBase.ZERO_PAGE_ID, this);
         } else {
-            //初始化的时候进行page的检测，但是不会对内容进行检测，这里主要是找到最大的写入page，和验证page都存在就可以了
             for (int i = 0; i < files.size(); i++) {
                 if (!files.contains(i)) {
                     throw new ImperfectException(i, "page not imperfect page#" + i);
@@ -127,7 +125,6 @@ final class StoreMessageHelper implements AutoCloseable {
 
 
     StoreMessageReader readSnapshot(@Nullable Long offset) throws IOException {
-        //这样相当于快照了
         final StorePageWriter writer = this.writer;
         int writerPageId = writer.pageId;
         int writerPosition = writer.getPosition();

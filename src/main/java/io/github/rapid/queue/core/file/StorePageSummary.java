@@ -14,7 +14,6 @@ final public class StorePageSummary {
     final static int DEFAULT_FILE_INT = -1;
 
     private int finalPageLength = StorePageSummary.DEFAULT_FILE_INT;
-    //这两个是临时关闭的时候有，运行的时候没有，如果有final的就没有这两个的
     private int pageLength = StorePageSummary.DEFAULT_FILE_INT;
 
 

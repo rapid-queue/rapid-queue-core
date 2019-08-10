@@ -4,8 +4,6 @@ import java.nio.ByteBuffer;
 import java.util.LinkedList;
 
 // MagicNumber(short) + PayloadLength(Int) + PayloadChecksum(Long) + PayloadBytes(byte[]) + Ending(byte: 127)
-// !!! 这里一定要注意 checksum 中是包含Ending的，因为Ending不是在头部的，这里Ending其实不是codec的工作，这个应该是写入的时候就有这个Ending了，!!!
-// 但是 这里可以提供这个功能来满足反查的需求，可以减少一次复制
 public final class FrameCodec {
     public final static byte ENDING_BYTE_VAL = 127;
 
@@ -37,10 +35,6 @@ public final class FrameCodec {
                 .put(ENDING_BYTE_VAL);
     }
 
-//    public FrameDecoder newDecoder() {
-//        return new FrameDecoder(maxFrameLength);
-//    }
-
     public void decode(CircularBuffer circularBuffer, LinkedList<MessageFrame> messageFrames) {
         while (circularBuffer.getLength() >= FrameCodec.LEN_HEAD) {
             circularBuffer.markNextReadPos();
@@ -48,12 +42,10 @@ public final class FrameCodec {
             int payloadSize = circularBuffer.getInt();
             if (magicNumber == FrameCodec.MAGIC_NUMBER_V1) {
                 if (circularBuffer.getLength() < payloadSize + LEN_CHECK_SUM_ADD_ENDING) {
-                    //内容加ending的长度不够，这里是因为前面的读过了，所以只会看后面的长度
                     circularBuffer.resetNextReadPos2Mark();
                     break;
                 } else {
                     long checksum0 = circularBuffer.getLong();
-                    //内容加ending的长度够了
                     byte[] payload = circularBuffer.getNextBytes(payloadSize);
                     long checksum;
                     try (Checker checker = Checker.getDefaultChecker()) {

@@ -2,7 +2,6 @@ package io.github.rapid.queue.core.kit;
 
 
 public final class MessageFrame {
-    //这个完整帧的长度
     private final int frameLength;
     private final byte[] payload;
 

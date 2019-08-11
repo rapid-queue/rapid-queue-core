@@ -82,35 +82,35 @@ final class StorePageReader implements AutoCloseable, Closeable {
         randomAccessFile.seek(position);
         return () -> new Iterator<StorePageReaderFrame>() {
             private int pos = finalPosition;
-            private LinkedList<MessageFrame> messageFrames = new LinkedList<>();
-            private CircularBuffer circularBuffer = new CircularBuffer(storeMessageHelper.readerPerSize);
+            private LinkedList<FrameMessage> frameMessages = new LinkedList<>();
+            private FrameCircularBuffer frameCircularBuffer = new FrameCircularBuffer(storeMessageHelper.readerPerSize);
             private int alreadyReadSize = 0;
 
             @Override
             public boolean hasNext() {
                 try {
                     while (true) {
-                        if (messageFrames.size() > 0) {
+                        if (frameMessages.size() > 0) {
                             return true;
                         }
-                        int len = circularBuffer.remaining_OneWay();
+                        int len = frameCircularBuffer.remaining_OneWay();
                         if (alreadyReadSize + len > readLength) {
                             len = readLength - alreadyReadSize;
                         }
                         if (len == 0) {
-                            if (circularBuffer.getLength() > 0) {
+                            if (frameCircularBuffer.getLength() > 0) {
                                 throw new ImperfectException(pageId, "file is imperfect bufferRemind");
                             }
                             return false;
                         }
-                        int read = randomAccessFile.read(circularBuffer.getBuffer(), circularBuffer.getNextWritePos(), len);
+                        int read = randomAccessFile.read(frameCircularBuffer.getBuffer(), frameCircularBuffer.getNextWritePos(), len);
 
                         if (read > 0) {
-                            circularBuffer.incrementAndGetWritePos(read);
-                            StorePageReader.this.storeMessageHelper.frameCodec.decode(circularBuffer, messageFrames);
+                            frameCircularBuffer.incrementAndGetWritePos(read);
+                            StorePageReader.this.storeMessageHelper.frameCodec.decode(frameCircularBuffer, frameMessages);
                             alreadyReadSize = alreadyReadSize + read;
                         } else {
-                            if (circularBuffer.getLength() > 0) {
+                            if (frameCircularBuffer.getLength() > 0) {
                                 throw new ImperfectException(pageId, "file is imperfect bufferRemind");
                             }
                             return false;
@@ -123,7 +123,7 @@ final class StorePageReader implements AutoCloseable, Closeable {
 
             @Override
             public StorePageReaderFrame next() {
-                MessageFrame frame = messageFrames.poll();
+                FrameMessage frame = frameMessages.poll();
                 if (frame != null) {
                     StorePageReaderFrame storePageReaderFrame
                             = new StorePageReaderFrame(pageId, pos, frame);

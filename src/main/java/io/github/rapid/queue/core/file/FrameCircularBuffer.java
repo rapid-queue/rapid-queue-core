@@ -1,6 +1,9 @@
-package io.github.rapid.queue.core.kit;
+package io.github.rapid.queue.core.file;
 
-public final class CircularBuffer {
+import io.github.rapid.queue.core.kit.BytesKit;
+import io.github.rapid.queue.core.kit.ImperfectException;
+
+final class FrameCircularBuffer {
     private final byte[] buffer;
     private final int capacity;
     private final int maxIndex;
@@ -9,17 +12,17 @@ public final class CircularBuffer {
     private int readPosMark;
     private boolean flipped = false;
 
-    public CircularBuffer(int capacity) {
+    FrameCircularBuffer(int capacity) {
         this.capacity = capacity;
         this.maxIndex = this.capacity - 1;
         this.buffer = new byte[capacity];
     }
 
-    public byte[] getBuffer() {
+    byte[] getBuffer() {
         return buffer;
     }
 
-    public int remaining_OneWay() {
+    int remaining_OneWay() {
         if (nextReadPos < nextWritePos) {
             return capacity - nextWritePos;
         } else if (nextReadPos == nextWritePos) {
@@ -47,11 +50,11 @@ public final class CircularBuffer {
         }
     }
 
-    public int getLength() {
+    int getLength() {
         return capacity - remaining_Ring();
     }
 
-    public int getNextWritePos() {
+    int getNextWritePos() {
         return nextWritePos;
     }
 
@@ -64,7 +67,7 @@ public final class CircularBuffer {
     }
 
 
-    public void incrementAndGetWritePos(int len) {
+    void incrementAndGetWritePos(int len) {
         int remainingRing = remaining_Ring();
         if (remainingRing < len) {
             throw new IllegalArgumentException("incrementAndGetWritePos overflow");

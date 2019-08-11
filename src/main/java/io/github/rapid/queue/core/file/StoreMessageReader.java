@@ -1,7 +1,7 @@
 package io.github.rapid.queue.core.file;
 
 
-import io.github.rapid.queue.core.EventMessage;
+import io.github.rapid.queue.core.RapidQueueMessage;
 import io.github.rapid.queue.core.kit.ImperfectException;
 
 import javax.annotation.Nonnull;
@@ -9,7 +9,7 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.Iterator;
 
-final class StoreMessageReader implements Iterable<EventMessage>, AutoCloseable {
+final class StoreMessageReader implements Iterable<RapidQueueMessage>, AutoCloseable {
 
     private final int startPageId;
     @Nullable
@@ -59,8 +59,8 @@ final class StoreMessageReader implements Iterable<EventMessage>, AutoCloseable 
 
     @Nonnull
     @Override
-    public Iterator<EventMessage> iterator() {
-        return new Iterator<EventMessage>() {
+    public Iterator<RapidQueueMessage> iterator() {
+        return new Iterator<RapidQueueMessage>() {
             @Override
             public boolean hasNext() {
                 try {
@@ -75,11 +75,11 @@ final class StoreMessageReader implements Iterable<EventMessage>, AutoCloseable 
             }
 
             @Override
-            public EventMessage next() {
+            public RapidQueueMessage next() {
                 StorePageReaderFrame frame = frameIterable.next();
-                return new EventMessage(
+                return new RapidQueueMessage(
                         StoreBase.createOffset(frame.pageId, frame.position)
-                        , frame.messageFrame.getPayload()
+                        , frame.frameMessage.getPayload()
                         , true
                 );
             }

@@ -2,7 +2,7 @@ package io.github.rapid.queue.core;
 
 import java.io.IOException;
 
-public interface SnapshotReader extends AutoCloseable, Iterable<EventMessage> {
+public interface RapidQueueReader extends AutoCloseable, Iterable<RapidQueueMessage> {
     @Override
     void close() throws IOException;
 }

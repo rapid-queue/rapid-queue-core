@@ -1,9 +1,9 @@
 package io.github.rapid.queue.core.file;
 
-import io.github.rapid.queue.core.EventMessage;
-import io.github.rapid.queue.core.SequenceListener;
-import io.github.rapid.queue.core.Sequencer;
-import io.github.rapid.queue.core.SnapshotReader;
+import io.github.rapid.queue.core.RapidQueue;
+import io.github.rapid.queue.core.RapidQueueMessage;
+import io.github.rapid.queue.core.RapidQueueListener;
+import io.github.rapid.queue.core.RapidQueueReader;
 import io.github.rapid.queue.core.kit.SimpleLock;
 
 import javax.annotation.Nonnull;
@@ -15,15 +15,15 @@ import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 
-final public class FileSequencer implements Sequencer, SimpleLock {
+final class FileRapidQueue implements RapidQueue {
 
     private final StoreMessageHelper fileDateHelper;
-    final FileSequencerCircularCache circularCache;
-    private volatile HashMap<String, FileSequenceListener> listenerMap = new HashMap<>();
+    final FileMessageCircularCache circularCache;
+    private volatile HashMap<String, FileRapidQueueListener> listenerMap = new HashMap<>();
     private final SimpleLock GLOBAL_LOCK;
     private final long lockWaitTimeMillis;
 
-    FileSequencer(SimpleLock GLOBAL_LOCK
+    FileRapidQueue(SimpleLock GLOBAL_LOCK
             , long lockWaitTimeMillis
             , File dataDir
             , int maxFrameLength, int maxPageSize
@@ -33,23 +33,21 @@ final public class FileSequencer implements Sequencer, SimpleLock {
         this.GLOBAL_LOCK = GLOBAL_LOCK;
         this.lockWaitTimeMillis = lockWaitTimeMillis;
         this.fileDateHelper = StoreMessageHelper.createOpened(dataDir, maxFrameLength, maxPageSize, writerPerSize, readerPerSize);
-        this.circularCache = new FileSequencerCircularCache(cachePageSize);
+        this.circularCache = new FileMessageCircularCache(cachePageSize);
     }
 
     private final static int NOT_DURABLE_OFFSET = -1;
 
-    @Override
-    public void lock() {
+    private void lock() {
         GLOBAL_LOCK.lock();
     }
 
-    @Override
-    public boolean tryLock(long time) {
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
+    boolean tryLock(long time) {
         return GLOBAL_LOCK.tryLock(time);
     }
 
-    @Override
-    public void unLock() {
+    void unLock() {
         GLOBAL_LOCK.unLock();
     }
 
@@ -66,12 +64,12 @@ final public class FileSequencer implements Sequencer, SimpleLock {
         try {
             if (durable) {
                 long offset = fileDateHelper.writeAppend(body);
-                EventMessage message = new EventMessage(offset, body, true);
+                RapidQueueMessage message = new RapidQueueMessage(offset, body, true);
                 circularCache.add(message);
                 notifyListener(message);
                 return offset;
             } else {
-                EventMessage message = new EventMessage(NOT_DURABLE_OFFSET, body, false);
+                RapidQueueMessage message = new RapidQueueMessage(NOT_DURABLE_OFFSET, body, false);
                 notifyListener(message);
                 return NOT_DURABLE_OFFSET;
             }
@@ -80,26 +78,26 @@ final public class FileSequencer implements Sequencer, SimpleLock {
         }
     }
 
-    private void notifyListener(EventMessage message) {
-        for (FileSequenceListener listener : listenerMap.values()) {
+    private void notifyListener(RapidQueueMessage message) {
+        for (FileRapidQueueListener listener : listenerMap.values()) {
             listener.onMessage(message);
         }
     }
 
     @Override
-    public SequenceListener newMessageListener() {
+    public RapidQueueListener newMessageListener() {
         checkStopped();
-        return new FileSequenceListener(this);
+        return new FileRapidQueueListener(this);
     }
 
     @Override
-    public SnapshotReader readSnapshot(@Nullable Long offset) throws IOException {
+    public RapidQueueReader readSnapshot(@Nullable Long offset) throws IOException {
         checkStopped();
         StoreMessageReader dataReader = fileDateHelper.readSnapshot(offset);
-        return new SnapshotReader() {
+        return new RapidQueueReader() {
             @Override
             @Nonnull
-            public Iterator<EventMessage> iterator() {
+            public Iterator<RapidQueueMessage> iterator() {
                 return dataReader.iterator();
             }
 
@@ -112,14 +110,14 @@ final public class FileSequencer implements Sequencer, SimpleLock {
 
     synchronized void removeTailListener(String listenerId) {
         checkStopped();
-        HashMap<String, FileSequenceListener> newMap = new HashMap<>(listenerMap);
+        HashMap<String, FileRapidQueueListener> newMap = new HashMap<>(listenerMap);
         newMap.remove(listenerId);
         listenerMap = newMap;
     }
 
-    synchronized void putListener(String listenerId, FileSequenceListener listener) {
+    synchronized void putListener(String listenerId, FileRapidQueueListener listener) {
         checkStopped();
-        HashMap<String, FileSequenceListener> newMap = new HashMap<>(listenerMap);
+        HashMap<String, FileRapidQueueListener> newMap = new HashMap<>(listenerMap);
         newMap.put(listenerId, listener);
         listenerMap = newMap;
     }

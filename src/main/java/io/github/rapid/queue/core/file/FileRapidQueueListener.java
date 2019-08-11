@@ -1,10 +1,10 @@
 package io.github.rapid.queue.core.file;
 
 
-import io.github.rapid.queue.core.EventMessage;
-import io.github.rapid.queue.core.MessageCallback;
-import io.github.rapid.queue.core.SequenceListener;
-import io.github.rapid.queue.core.SnapshotReader;
+import io.github.rapid.queue.core.RapidQueueCallback;
+import io.github.rapid.queue.core.RapidQueueListener;
+import io.github.rapid.queue.core.RapidQueueMessage;
+import io.github.rapid.queue.core.RapidQueueReader;
 import io.github.rapid.queue.core.kit.UUIDKit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,24 +16,24 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-final class FileSequenceListener implements SequenceListener {
-    private final static Logger logger = LoggerFactory.getLogger(FileSequenceListener.class);
+final class FileRapidQueueListener implements RapidQueueListener {
+    private final static Logger logger = LoggerFactory.getLogger(FileRapidQueueListener.class);
 
     private final String listenerId;
-    private final FileSequencer fileSequencer;
+    private final FileRapidQueue fileRapidQueue;
     //
     private volatile Long lastOffsetId;
-    private volatile MessageCallback messageCallback;
+    private volatile RapidQueueCallback messageCallback;
 
-    FileSequenceListener(FileSequencer fileSequencer) {
+    FileRapidQueueListener(FileRapidQueue fileRapidQueue) {
         this.listenerId = UUIDKit.randomUUID();
-        this.fileSequencer = fileSequencer;
+        this.fileRapidQueue = fileRapidQueue;
     }
 
     private final Executor executor = Executors.newFixedThreadPool(10);
 
     @Override
-    public void start(@Nullable Long offset, MessageCallback messageCallback) {
+    public void start(@Nullable Long offset, RapidQueueCallback messageCallback) {
         Objects.requireNonNull(messageCallback, "messageListener can not null");
         this.messageCallback = messageCallback;
         this.lastOffsetId = offset;
@@ -52,28 +52,28 @@ final class FileSequenceListener implements SequenceListener {
         boolean shouldReadFile = false;
         do {
             try {
-                if (!fileSequencer.tryLock(3000)) {
+                if (!fileRapidQueue.tryLock(3000)) {
                     throw new IllegalArgumentException("reader wait time out");
                 }
-                FileSequencerCircularCache.FullReader circularPageFullReader = fileSequencer.circularCache.createReader(lastOffsetId);
-                FileSequencerCircularCache.ReaderStatus circularReaderStatus = circularPageFullReader.getStatus();
-                if (circularReaderStatus.equals(FileSequencerCircularCache.ReaderStatus.GREATER)) {
-                    fileSequencer.putListener(listenerId, this);
+                FileMessageCircularCache.FullReader circularPageFullReader = fileRapidQueue.circularCache.createReader(lastOffsetId);
+                FileMessageCircularCache.ReaderStatus circularReaderStatus = circularPageFullReader.getStatus();
+                if (circularReaderStatus.equals(FileMessageCircularCache.ReaderStatus.GREATER)) {
+                    fileRapidQueue.putListener(listenerId, this);
                     shouldReadFile = false;
-                } else if (circularReaderStatus.equals(FileSequencerCircularCache.ReaderStatus.WITHIN)) {
-                    for (EventMessage message : circularPageFullReader) {
+                } else if (circularReaderStatus.equals(FileMessageCircularCache.ReaderStatus.WITHIN)) {
+                    for (RapidQueueMessage message : circularPageFullReader) {
                         if (stop.get()) return;
                         onMessage(message);
                         if (stop.get()) return;
                     }
-                    fileSequencer.putListener(listenerId, this);
+                    fileRapidQueue.putListener(listenerId, this);
                     active.set(true);
                     shouldReadFile = false;
-                } else if (circularReaderStatus.equals(FileSequencerCircularCache.ReaderStatus.EMPTY)) {
+                } else if (circularReaderStatus.equals(FileMessageCircularCache.ReaderStatus.EMPTY)) {
                     if (!shouldReadFile) {
                         shouldReadFile = true;
                     } else {
-                        fileSequencer.putListener(listenerId, this);
+                        fileRapidQueue.putListener(listenerId, this);
                         active.set(true);
                         shouldReadFile = false;
                     }
@@ -81,12 +81,12 @@ final class FileSequenceListener implements SequenceListener {
                     shouldReadFile = true;
                 }
             } finally {
-                fileSequencer.unLock();
+                fileRapidQueue.unLock();
             }
 
             if (shouldReadFile) {
-                try (SnapshotReader reader = fileSequencer.readSnapshot(lastOffsetId)) {
-                    for (EventMessage message : reader) {
+                try (RapidQueueReader reader = fileRapidQueue.readSnapshot(lastOffsetId)) {
+                    for (RapidQueueMessage message : reader) {
                         if (stop.get()) return;
                         onMessage(message);
                         if (stop.get()) return;
@@ -104,7 +104,7 @@ final class FileSequenceListener implements SequenceListener {
     public void stop() {
         stop.set(true);
         active.set(false);
-        fileSequencer.removeTailListener(listenerId);
+        fileRapidQueue.removeTailListener(listenerId);
     }
 
     @Override
@@ -118,7 +118,7 @@ final class FileSequenceListener implements SequenceListener {
 
     private boolean firstMessage = true;
 
-    void onMessage(EventMessage message) {
+    void onMessage(RapidQueueMessage message) {
         if (stop.get()) {
             return;
         }

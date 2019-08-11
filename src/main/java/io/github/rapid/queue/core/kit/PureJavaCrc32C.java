@@ -44,7 +44,7 @@ public class PureJavaCrc32C implements Checksum {
      */
     private int crc;
 
-    PureJavaCrc32C() {
+    public PureJavaCrc32C() {
         reset();
     }
 

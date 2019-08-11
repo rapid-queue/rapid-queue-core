@@ -10,14 +10,14 @@ import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class FileSequencerTest {
-    private Sequencer fileSequencer;
+public class FileRapidQueueTest {
+    private RapidQueue fileSequencer;
 
     @Before
     public void setUp() throws Exception {
         File dataDir = new File("/data/seqTest1");
         FileUtils.deleteDirectory(dataDir);
-        this.fileSequencer = Sequencer.createFileSequencerBuilder(dataDir).setCachePageSize(10).build();
+        this.fileSequencer = RapidQueue.createFileSequencerBuilder(dataDir).setCachePageSize(10).build();
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             try {
                 fileSequencer.close();
@@ -41,30 +41,6 @@ public class FileSequencerTest {
         //2857000
     }
 
-
-    @Test
-    public void tryRepair1() throws IOException {
-        int i = 0;
-        long start = System.currentTimeMillis();
-        try (SnapshotReader eventMessages = fileSequencer.readSnapshot(null)) {
-            for (EventMessage eventMessage : eventMessages) {
-                byte[] body = eventMessage.getBody();
-                String string = new String(body);
-                long offset = eventMessage.getOffset();
-//                System.out.println(offset + "|"+string);
-                if (Integer.parseInt(string) != i) {
-                    throw new RuntimeException("error at :" + eventMessage);
-                }
-                i++;
-            }
-        }
-        long l = System.currentTimeMillis() - start;
-        System.out.println((i / l) * 1000);
-        fileSequencer.close();
-//        fileSequencer.append("a1", true);
-//        fileSequencer.append("a2", true);
-//        fileSequencer.append(JSON.toJSONString(Collections.singletonMap("a", "b")), true);
-    }
 
     @Test
     public void name() {
@@ -92,11 +68,11 @@ public class FileSequencerTest {
             checkI.put(finalI, new AtomicInteger(-1));
             new Thread(() -> {
                 try {
-                    SequenceListener sequenceTailer
+                    RapidQueueListener sequenceTailer
                             = fileSequencer.newMessageListener();
-                    sequenceTailer.start(null, new MessageCallback() {
+                    sequenceTailer.start(null, new RapidQueueCallback() {
                         @Override
-                        public void onMessage(EventMessage eventMessage) {
+                        public void onMessage(RapidQueueMessage eventMessage) {
                             String body = new String(eventMessage.getBody());
                             int message = Integer.parseInt(body);
                             AtomicInteger atomicInteger = checkI.get(finalI);
@@ -117,19 +93,5 @@ public class FileSequencerTest {
         TimeUnit.MINUTES.sleep(5);
     }
 
-    @Test
-    public void name2() throws IOException, InterruptedException {
-        SequenceListener sequenceTailer
-                = fileSequencer.newMessageListener();
-        sequenceTailer.start(null, new MessageCallback() {
-            @Override
-            public void onMessage(EventMessage eventMessage) {
-                System.out.println(eventMessage);
-            }
-        });
-        while (true) {
-            System.out.println(sequenceTailer.statusActive());
-            TimeUnit.SECONDS.sleep(1);
-        }
-    }
+
 }

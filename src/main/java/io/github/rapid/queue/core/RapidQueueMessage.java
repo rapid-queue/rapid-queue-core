@@ -1,13 +1,12 @@
 package io.github.rapid.queue.core;
 
 
-
-public final class EventMessage {
+public final class RapidQueueMessage {
     private final long offset;
     private final byte[] body;
     private final boolean durable;
 
-    public EventMessage(long offset, byte[] body, boolean durable) {
+    public RapidQueueMessage(long offset, byte[] body, boolean durable) {
         this.offset = offset;
         this.body = body;
         this.durable = durable;
@@ -27,7 +26,7 @@ public final class EventMessage {
 
     @Override
     public String toString() {
-        return "EventMessage{" +
+        return "RapidQueueMessage{" +
                 "offset=" + offset +
                 ", durable=" + durable +
                 '}';

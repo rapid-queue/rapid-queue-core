@@ -1,6 +1,5 @@
 package io.github.rapid.queue.core.file;
 
-import io.github.rapid.queue.core.kit.FrameCodec;
 import io.github.rapid.queue.core.kit.ImperfectException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;

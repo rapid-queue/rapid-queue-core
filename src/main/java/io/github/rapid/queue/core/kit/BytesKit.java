@@ -56,7 +56,7 @@ public abstract class BytesKit {
                 + ((bytes[off + 1] & 0xFFL) << 48) + (((long) bytes[off]) << 56);
     }
 
-    static long bytes2long(byte b0, byte b1, byte b2, byte b3, byte b4, byte b5, byte b6, byte b7) {
+    public static long bytes2long(byte b0, byte b1, byte b2, byte b3, byte b4, byte b5, byte b6, byte b7) {
         return ((b7 & 0xFFL)) + ((b6 & 0xFFL) << 8) + ((b5 & 0xFFL) << 16)
                 + ((b4 & 0xFFL) << 24) + ((b3 & 0xFFL) << 32) + ((b2 & 0xFFL) << 40)
                 + ((b1 & 0xFFL) << 48) + (((long) b0) << 56);
@@ -75,22 +75,22 @@ public abstract class BytesKit {
         return ((bytes[off + 3] & 0xFF)) + ((bytes[off + 2] & 0xFF) << 8) + ((bytes[off + 1] & 0xFF) << 16) + ((bytes[off]) << 24);
     }
 
-    static int bytes2int(byte b0, byte b1, byte b2, byte b3) {
+    public static int bytes2int(byte b0, byte b1, byte b2, byte b3) {
         return ((b3 & 0xFF)) + ((b2 & 0xFF) << 8) + ((b1 & 0xFF) << 16) + (b0 << 24);
     }
 
 
-    static void short2bytes(short value, byte[] bytes, int off) {
+    public static void short2bytes(short value, byte[] bytes, int off) {
         bytes[off + 1] = (byte) value;
         bytes[off] = (byte) (value >>> 8);
     }
 
 
-    static short bytes2short(byte[] b, int off) {
+    public static short bytes2short(byte[] b, int off) {
         return (short) (((b[off + 1] & 0xFF)) + ((b[off] & 0xFF) << 8));
     }
 
-    static short bytes2short(byte b0, byte b1) {
+    public static short bytes2short(byte b0, byte b1) {
         return (short) (((b1 & 0xFF)) + ((b0 & 0xFF) << 8));
     }
 

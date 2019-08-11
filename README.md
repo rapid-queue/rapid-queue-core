@@ -1,2 +1,2 @@
 # rapid-queue-core
-TODO
+[中文](README-CN.md)

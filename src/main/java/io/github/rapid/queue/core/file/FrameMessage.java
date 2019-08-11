@@ -1,21 +1,21 @@
-package io.github.rapid.queue.core.kit;
+package io.github.rapid.queue.core.file;
 
 
-public final class MessageFrame {
+final class FrameMessage {
     private final int frameLength;
     private final byte[] payload;
 
-    MessageFrame(int frameLength, byte[] payload) {
+    FrameMessage(int frameLength, byte[] payload) {
         this.frameLength = frameLength;
         this.payload = payload;
     }
 
-    public byte[] getPayload() {
+    byte[] getPayload() {
         return payload;
     }
 
 
-    public int getFrameLength() {
+    int getFrameLength() {
         return frameLength;
     }
 }

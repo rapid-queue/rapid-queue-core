@@ -1,27 +1,27 @@
 package io.github.rapid.queue.core.file;
 
-import io.github.rapid.queue.core.EventMessage;
+import io.github.rapid.queue.core.RapidQueueMessage;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Iterator;
 
-final class FileSequencerCircularCache {
+final class FileMessageCircularCache {
 
     private volatile int nextWritePos = 0;
     private volatile boolean flipped = false;
 
-    private final EventMessage[] buffer;
+    private final RapidQueueMessage[] buffer;
     private final int capacity;
     private final int maxIndex;
 
-    FileSequencerCircularCache(int capacity) {
-        this.buffer = new EventMessage[capacity];
+    FileMessageCircularCache(int capacity) {
+        this.buffer = new RapidQueueMessage[capacity];
         this.capacity = capacity;
         this.maxIndex = this.capacity - 1;
     }
 
-    void add(EventMessage element) {
+    void add(RapidQueueMessage element) {
         buffer[nextWritePos] = element;
         int next = nextWritePos + 1;
         if (next > maxIndex) {
@@ -36,7 +36,7 @@ final class FileSequencerCircularCache {
     private final FullReader fullReader = new FullReader();
 
     FullReader createReader(@Nullable Long offset) {
-        EventMessage tailMsg;
+        RapidQueueMessage tailMsg;
         int head;
         int tail;
         if (nextWritePos == 0) {
@@ -102,7 +102,7 @@ final class FileSequencerCircularCache {
         LESS, GREATER, WITHIN, EMPTY
     }
 
-    public class FullReaderIterator implements Iterator<EventMessage> {
+    public class FullReaderIterator implements Iterator<RapidQueueMessage> {
         private boolean circle;
         private int nextIx;
 
@@ -110,7 +110,7 @@ final class FileSequencerCircularCache {
         private int head;
         private int tail;
 
-        private Iterator<EventMessage> reset(ReaderStatus status, int head, int tail) {
+        private Iterator<RapidQueueMessage> reset(ReaderStatus status, int head, int tail) {
             this.status = status;
             this.head = head;
             this.tail = tail;
@@ -154,12 +154,12 @@ final class FileSequencerCircularCache {
         }
 
         @Override
-        public EventMessage next() {
+        public RapidQueueMessage next() {
             return buffer[nextIx];
         }
     }
 
-    class FullReader implements Iterable<EventMessage> {
+    class FullReader implements Iterable<RapidQueueMessage> {
         private final FullReaderIterator fullReaderIterator = new FullReaderIterator();
         private ReaderStatus status;
         private int head;
@@ -187,7 +187,7 @@ final class FileSequencerCircularCache {
 
         @Nonnull
         @Override
-        public Iterator<EventMessage> iterator() {
+        public Iterator<RapidQueueMessage> iterator() {
             return fullReaderIterator.reset(status, head, tail);
         }
     }

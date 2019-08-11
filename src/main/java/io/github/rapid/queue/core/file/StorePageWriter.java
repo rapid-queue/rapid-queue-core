@@ -1,6 +1,5 @@
 package io.github.rapid.queue.core.file;
 
-import io.github.rapid.queue.core.kit.FrameCodec;
 import io.github.rapid.queue.core.kit.ImperfectException;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -103,7 +102,7 @@ final class StorePageWriter implements AutoCloseable, Closeable {
                     this.position = new AtomicInteger(StorePageSummary.SIZE);
                     try (StorePageReader storePageReader = StorePageReader.createOpened(pageId, storeMessageHelper, contentLength)) {
                         for (StorePageReaderFrame messageFrame : storePageReader.readFull(null)) {
-                            this.position.addAndGet(messageFrame.messageFrame.getFrameLength());
+                            this.position.addAndGet(messageFrame.frameMessage.getFrameLength());
                         }
                     }
                     logger.info("pageId:{} try repair position:{}, lastEndingPos:{}", pageId, position.get(), lastEndingPos);

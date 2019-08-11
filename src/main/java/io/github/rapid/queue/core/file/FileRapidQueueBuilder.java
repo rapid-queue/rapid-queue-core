@@ -8,7 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-final public class FileSequenceBuilder {
+final public class FileRapidQueueBuilder {
     private final File dataDir;
 
     private SimpleLock lock = new JUCLock();
@@ -19,16 +19,16 @@ final public class FileSequenceBuilder {
     private int readSize = Math.toIntExact(FileUtils.ONE_MB);
     private int cachePageSize = 1024;
 
-    public FileSequenceBuilder(File dataDir) {
+    public FileRapidQueueBuilder(File dataDir) {
         this.dataDir = dataDir;
     }
 
-    public FileSequenceBuilder setLock(SimpleLock lock) {
+    public FileRapidQueueBuilder setLock(SimpleLock lock) {
         this.lock = lock;
         return this;
     }
 
-    public FileSequenceBuilder setLockWaitTimeMillis(long lockWaitTimeMillis) {
+    public FileRapidQueueBuilder setLockWaitTimeMillis(long lockWaitTimeMillis) {
         if (lockWaitTimeMillis < 0) {
             throw new IllegalArgumentException("lockWaitTimeMillis should >= 0");
         }
@@ -36,34 +36,34 @@ final public class FileSequenceBuilder {
         return this;
     }
 
-    public FileSequenceBuilder setMaxFrameLength(int maxFrameLength) {
+    public FileRapidQueueBuilder setMaxFrameLength(int maxFrameLength) {
         this.maxFrameLength = maxFrameLength;
         return this;
     }
 
 
-    public FileSequenceBuilder setPageSize(int pageSize) {
+    public FileRapidQueueBuilder setPageSize(int pageSize) {
         this.pageSize = pageSize;
         return this;
     }
 
-    public FileSequenceBuilder setWriteSize(int writeSize) {
+    public FileRapidQueueBuilder setWriteSize(int writeSize) {
         this.writeSize = writeSize;
         return this;
     }
 
-    public FileSequenceBuilder setReadSize(int readSize) {
+    public FileRapidQueueBuilder setReadSize(int readSize) {
         this.readSize = readSize;
         return this;
     }
 
-    public FileSequenceBuilder setCachePageSize(int cachePageSize) {
+    public FileRapidQueueBuilder setCachePageSize(int cachePageSize) {
         this.cachePageSize = cachePageSize;
         return this;
     }
 
-    public FileSequencer build() throws IOException {
-        return new FileSequencer(lock
+    public FileRapidQueue build() throws IOException {
+        return new FileRapidQueue(lock
                 , lockWaitTimeMillis
                 , dataDir
                 , maxFrameLength

@@ -1,10 +1,12 @@
 package io.github.rapid.queue.core.file;
 
+import io.github.rapid.queue.core.kit.Checker;
+
 import java.nio.ByteBuffer;
 import java.util.LinkedList;
 
 // MagicNumber(short) + PayloadLength(Int) + PayloadChecksum(Long) + PayloadBytes(byte[]) + Ending(byte: 127)
-final class FrameCodec {
+class FrameCodec {
     final static byte ENDING_BYTE_VAL = 127;
 
     private final static int LEN_HEAD = Short.BYTES + Integer.BYTES + Long.BYTES;
@@ -23,7 +25,7 @@ final class FrameCodec {
 
     void encodeWrite(ByteBuffer byteBuffer, byte[] payload) {
         long checksum;
-        try (Checker checker = Checker.getDefaultChecker();) {
+        try (Checker checker = Checker.getChecker();) {
             checker.update(payload, 0, payload.length);
             checker.update(ENDING_BYTE_VAL);
             checksum = checker.getValue();
@@ -48,7 +50,7 @@ final class FrameCodec {
                     long checksum0 = frameCircularBuffer.getLong();
                     byte[] payload = frameCircularBuffer.getNextBytes(payloadSize);
                     long checksum;
-                    try (Checker checker = Checker.getDefaultChecker()) {
+                    try (Checker checker = Checker.getChecker()) {
                         checker.update(payload, 0, payload.length);
                         checker.update(frameCircularBuffer.getByte());
                         checksum = checker.getValue();
@@ -69,7 +71,7 @@ final class FrameCodec {
     }
 
 
-    public int frameLengthAddPayloadLen(int payloadLen) {
+    int frameLengthAddPayloadLen(int payloadLen) {
         int frameLen = payloadLen + LEN_HEAD_ADD_ENDING;
         if (frameLen > maxFrameLength) {
             throw new IllegalArgumentException("frameLen:" + frameLen + ", maxFrameLength:" + maxFrameLength);

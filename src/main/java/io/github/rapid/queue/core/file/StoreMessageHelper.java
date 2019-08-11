@@ -17,10 +17,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 
-final class StoreMessageHelper implements AutoCloseable {
+class StoreMessageHelper implements AutoCloseable {
     private final static Logger logger = LoggerFactory.getLogger(StoreMessageHelper.class);
 
-    final ConcurrentHashMap<String, Closeable> PageReaderCloseHook = new ConcurrentHashMap<>();
+    final ConcurrentHashMap<Long, Closeable> pageReader = new ConcurrentHashMap<>();
     private final File dataDir;
     private final int maxPageSize;
     final int writerPerSize;
@@ -72,7 +72,7 @@ final class StoreMessageHelper implements AutoCloseable {
         } catch (Exception e) {
             logger.warn(String.format("close writer error:%s, {}", writer), e);
         }
-        for (Closeable value : PageReaderCloseHook.values()) {
+        for (Closeable value : pageReader.values()) {
             try {
                 value.close();
             } catch (Exception e) {

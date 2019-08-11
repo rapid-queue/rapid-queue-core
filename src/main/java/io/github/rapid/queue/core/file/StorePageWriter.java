@@ -13,7 +13,7 @@ import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.concurrent.atomic.AtomicInteger;
 
-final class StorePageWriter implements AutoCloseable, Closeable {
+class StorePageWriter implements AutoCloseable, Closeable {
     private final static Logger logger = LoggerFactory.getLogger(StorePageWriter.class);
     //
     final int pageId;
@@ -49,19 +49,16 @@ final class StorePageWriter implements AutoCloseable, Closeable {
         StorePageSummary summary = StorePageSummary.read(randomAccessFile);
         if (summary == null) {
             this.position = new AtomicInteger(StorePageSummary.SIZE);
-        }
-        else {
+        } else {
             if (summary.getFinalPageLength() != StorePageSummary.DEFAULT_FILE_INT
                     && summary.getPageLength() == StorePageSummary.DEFAULT_FILE_INT
             ) {
                 throw new IllegalArgumentException("read only");
-            }
-            else if (summary.getFinalPageLength() == StorePageSummary.DEFAULT_FILE_INT
+            } else if (summary.getFinalPageLength() == StorePageSummary.DEFAULT_FILE_INT
                     && summary.getPageLength() != StorePageSummary.DEFAULT_FILE_INT
             ) {
                 this.position = new AtomicInteger(summary.getPageLength());
-            }
-            else if (summary.getFinalPageLength() == StorePageSummary.DEFAULT_FILE_INT
+            } else if (summary.getFinalPageLength() == StorePageSummary.DEFAULT_FILE_INT
 //                    && summary.getPageLength() == StorePageSummary.DEFAULT_FILE_INT
             ) {
                 Integer lastEndingPos = null;
@@ -97,8 +94,7 @@ final class StorePageWriter implements AutoCloseable, Closeable {
                 int contentLength = lastEndingPos + 1;
                 if (contentLength == 0) {
                     this.position = new AtomicInteger(StorePageSummary.SIZE);
-                }
-                else if (contentLength > 0) {
+                } else if (contentLength > 0) {
                     this.position = new AtomicInteger(StorePageSummary.SIZE);
                     try (StorePageReader storePageReader = StorePageReader.createOpened(pageId, storeMessageHelper, contentLength)) {
                         for (StorePageReaderFrame messageFrame : storePageReader.readFull(null)) {
@@ -110,8 +106,7 @@ final class StorePageWriter implements AutoCloseable, Closeable {
                         throw new ImperfectException(pageId, "writePosition:" + this.getPosition() + " != lastEndingPos:" + lastEndingPos);
                     }
                 }
-            }
-            else {
+            } else {
                 throw new ImperfectException(pageId, "file is imperfect @ storePageSummary: " + summary);
             }
         }

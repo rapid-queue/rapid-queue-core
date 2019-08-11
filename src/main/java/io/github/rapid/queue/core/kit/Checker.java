@@ -1,11 +1,9 @@
-package io.github.rapid.queue.core.file;
+package io.github.rapid.queue.core.kit;
 
-
-import io.github.rapid.queue.core.kit.PureJavaCrc32C;
 
 import java.util.zip.Checksum;
 
-final class Checker implements AutoCloseable, Checksum {
+final public class Checker implements AutoCloseable, Checksum {
     private static final ThreadLocal<Checker> CHECKER_THREAD_LOCAL = ThreadLocal.withInitial(() -> new Checker(new PureJavaCrc32C()));
     private final Checksum checksum;
 
@@ -19,7 +17,7 @@ final class Checker implements AutoCloseable, Checksum {
     }
 
 
-    static Checker getDefaultChecker() {
+    public static Checker getChecker() {
         return CHECKER_THREAD_LOCAL.get();
     }
 

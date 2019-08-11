@@ -3,7 +3,7 @@ package io.github.rapid.queue.core.file;
 import io.github.rapid.queue.core.kit.BytesKit;
 import io.github.rapid.queue.core.kit.ImperfectException;
 
-final class FrameCircularBuffer {
+class FrameCircularBuffer {
     private final byte[] buffer;
     private final int capacity;
     private final int maxIndex;

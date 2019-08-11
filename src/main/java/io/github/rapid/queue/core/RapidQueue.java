@@ -1,7 +1,7 @@
 package io.github.rapid.queue.core;
 
 
-import io.github.rapid.queue.core.file.FileRapidQueueBuilder;
+import io.github.rapid.queue.core.file.RapidQueueBuilder;
 
 import javax.annotation.Nullable;
 import java.io.File;
@@ -17,7 +17,7 @@ public interface RapidQueue extends AutoCloseable {
 
     void close() throws IOException;
 
-    static FileRapidQueueBuilder createFileSequencerBuilder(File dataDir) {
-        return new FileRapidQueueBuilder(dataDir);
+    static RapidQueueBuilder createRapidQueueBuilder(File dataDir) {
+        return new RapidQueueBuilder(dataDir);
     }
 }

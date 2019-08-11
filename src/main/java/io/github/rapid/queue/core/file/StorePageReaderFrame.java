@@ -1,6 +1,6 @@
 package io.github.rapid.queue.core.file;
 
-final class StorePageReaderFrame {
+class StorePageReaderFrame {
     final int pageId;
     final int position;
     final FrameMessage frameMessage;

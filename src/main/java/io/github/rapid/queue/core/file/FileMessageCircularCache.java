@@ -6,7 +6,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Iterator;
 
-final class FileMessageCircularCache {
+class FileMessageCircularCache {
 
     private volatile int nextWritePos = 0;
     private volatile boolean flipped = false;
@@ -33,9 +33,9 @@ final class FileMessageCircularCache {
         this.nextWritePos = next;
     }
 
-    private final FullReader fullReader = new FullReader();
+    private final Reader reader = new Reader();
 
-    FullReader createReader(@Nullable Long offset) {
+    Reader createReader(@Nullable Long offset) {
         RapidQueueMessage tailMsg;
         int head;
         int tail;
@@ -65,30 +65,30 @@ final class FileMessageCircularCache {
             throw new IllegalArgumentException("head == tail && tailMsg != null");
         }
         if (tailMsg == null) {
-            return fullReader
+            return reader
                     .setStatus(ReaderStatus.EMPTY)
                     .setHead(head)
                     .setTail(tail);
         } else {
             if (offset == null) {
-                return fullReader
+                return reader
                         .setStatus(ReaderStatus.LESS)
                         .setHead(head)
                         .setTail(tail);
             } else {
                 if (StoreBase.compareOffset(offset, tailMsg.getOffset()) > 0) {
-                    return fullReader
+                    return reader
                             .setStatus(ReaderStatus.GREATER)
                             .setHead(head)
                             .setTail(tail);
                 } else {
                     if (StoreBase.compareOffset(offset, buffer[head].getOffset()) < 0) {
-                        return fullReader
+                        return reader
                                 .setStatus(ReaderStatus.LESS)
                                 .setHead(head)
                                 .setTail(tail);
                     } else {
-                        return fullReader
+                        return reader
                                 .setStatus(ReaderStatus.WITHIN)
                                 .setHead(head)
                                 .setTail(tail);
@@ -102,7 +102,7 @@ final class FileMessageCircularCache {
         LESS, GREATER, WITHIN, EMPTY
     }
 
-    public class FullReaderIterator implements Iterator<RapidQueueMessage> {
+    class ReaderIterator implements Iterator<RapidQueueMessage> {
         private boolean circle;
         private int nextIx;
 
@@ -128,7 +128,6 @@ final class FileMessageCircularCache {
                 } else {
                     int next = nextIx + 1;
                     if (circle) {
-                        //如果需要转圈，那么先需要必有要到最大值
                         if (next > maxIndex) {
                             next = next - capacity;
                             circle = false;
@@ -139,7 +138,6 @@ final class FileMessageCircularCache {
                             return true;
                         }
                     } else {
-                        //如果不需要转圈，那么判断是否到尾巴
                         if (next <= tail) {
                             this.nextIx = next;
                             return true;
@@ -159,23 +157,23 @@ final class FileMessageCircularCache {
         }
     }
 
-    class FullReader implements Iterable<RapidQueueMessage> {
-        private final FullReaderIterator fullReaderIterator = new FullReaderIterator();
+    class Reader implements Iterable<RapidQueueMessage> {
+        private final ReaderIterator readerIterator = new ReaderIterator();
         private ReaderStatus status;
         private int head;
         private int tail;
 
-        FullReader setStatus(ReaderStatus status) {
+        Reader setStatus(ReaderStatus status) {
             this.status = status;
             return this;
         }
 
-        FullReader setHead(int head) {
+        Reader setHead(int head) {
             this.head = head;
             return this;
         }
 
-        FullReader setTail(int tail) {
+        Reader setTail(int tail) {
             this.tail = tail;
             return this;
         }
@@ -188,7 +186,7 @@ final class FileMessageCircularCache {
         @Nonnull
         @Override
         public Iterator<RapidQueueMessage> iterator() {
-            return fullReaderIterator.reset(status, head, tail);
+            return readerIterator.reset(status, head, tail);
         }
     }
 }

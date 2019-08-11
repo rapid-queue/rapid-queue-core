@@ -9,7 +9,7 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.Iterator;
 
-final class StoreMessageReader implements Iterable<RapidQueueMessage>, AutoCloseable {
+class StoreMessageReader implements Iterable<RapidQueueMessage>, AutoCloseable {
 
     private final int startPageId;
     @Nullable

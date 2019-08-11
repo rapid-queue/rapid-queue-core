@@ -4,7 +4,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-public final class JUCLock implements SimpleLock {
+public final class SimpleLockJUC implements SimpleLock {
     private final Lock lock = new ReentrantLock();
 
 

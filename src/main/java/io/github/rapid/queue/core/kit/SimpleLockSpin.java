@@ -3,7 +3,7 @@ package io.github.rapid.queue.core.kit;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class SpinLock implements SimpleLock {
+final public class SimpleLockSpin implements SimpleLock {
 
     private final AtomicReference<Thread> owner = new AtomicReference<>();
 

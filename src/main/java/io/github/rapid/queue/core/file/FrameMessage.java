@@ -1,7 +1,7 @@
 package io.github.rapid.queue.core.file;
 
 
-final class FrameMessage {
+class FrameMessage {
     private final int frameLength;
     private final byte[] payload;
 

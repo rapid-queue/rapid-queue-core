@@ -15,11 +15,11 @@ import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 
-final class FileRapidQueue implements RapidQueue {
+class FileRapidQueue implements RapidQueue {
 
     private final StoreMessageHelper fileDateHelper;
     final FileMessageCircularCache circularCache;
-    private volatile HashMap<String, FileRapidQueueListener> listenerMap = new HashMap<>();
+    private volatile HashMap<Long, FileRapidQueueListener> listenerMap = new HashMap<>();
     private final SimpleLock GLOBAL_LOCK;
     private final long lockWaitTimeMillis;
 
@@ -108,23 +108,23 @@ final class FileRapidQueue implements RapidQueue {
         };
     }
 
-    synchronized void removeTailListener(String listenerId) {
+    synchronized void removeTailListener(Long listenerId) {
         checkStopped();
-        HashMap<String, FileRapidQueueListener> newMap = new HashMap<>(listenerMap);
+        HashMap<Long, FileRapidQueueListener> newMap = new HashMap<>(listenerMap);
         newMap.remove(listenerId);
         listenerMap = newMap;
     }
 
-    synchronized void putListener(String listenerId, FileRapidQueueListener listener) {
+    synchronized void putListener(Long listenerId, FileRapidQueueListener listener) {
         checkStopped();
-        HashMap<String, FileRapidQueueListener> newMap = new HashMap<>(listenerMap);
+        HashMap<Long, FileRapidQueueListener> newMap = new HashMap<>(listenerMap);
         newMap.put(listenerId, listener);
         listenerMap = newMap;
     }
 
     private void checkStopped() {
         if (stopped.get()) {
-            throw new IllegalArgumentException("sequencer stopped");
+            throw new IllegalArgumentException("rapid queue stopped");
         }
     }
 

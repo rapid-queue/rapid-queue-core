@@ -37,14 +37,14 @@ import java.util.zip.Checksum;
  * @since 1.11
  */
 @SuppressWarnings("PointlessArithmeticExpression")
-public class PureJavaCrc32C implements Checksum {
+final class PureJavaCrc32C implements Checksum {
 
     /**
      * the current CRC value, bit-flipped
      */
     private int crc;
 
-    public PureJavaCrc32C() {
+    PureJavaCrc32C() {
         reset();
     }
 

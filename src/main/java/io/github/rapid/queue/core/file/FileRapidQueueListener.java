@@ -5,7 +5,6 @@ import io.github.rapid.queue.core.RapidQueueCallback;
 import io.github.rapid.queue.core.RapidQueueListener;
 import io.github.rapid.queue.core.RapidQueueMessage;
 import io.github.rapid.queue.core.RapidQueueReader;
-import io.github.rapid.queue.core.kit.UUIDKit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,18 +14,20 @@ import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 
-final class FileRapidQueueListener implements RapidQueueListener {
+class FileRapidQueueListener implements RapidQueueListener {
     private final static Logger logger = LoggerFactory.getLogger(FileRapidQueueListener.class);
-
-    private final String listenerId;
+    private final static AtomicLong ID = new AtomicLong();
+    //
+    private final long listenerId;
     private final FileRapidQueue fileRapidQueue;
     //
     private volatile Long lastOffsetId;
     private volatile RapidQueueCallback messageCallback;
 
     FileRapidQueueListener(FileRapidQueue fileRapidQueue) {
-        this.listenerId = UUIDKit.randomUUID();
+        this.listenerId = ID.incrementAndGet();
         this.fileRapidQueue = fileRapidQueue;
     }
 
@@ -55,13 +56,13 @@ final class FileRapidQueueListener implements RapidQueueListener {
                 if (!fileRapidQueue.tryLock(3000)) {
                     throw new IllegalArgumentException("reader wait time out");
                 }
-                FileMessageCircularCache.FullReader circularPageFullReader = fileRapidQueue.circularCache.createReader(lastOffsetId);
-                FileMessageCircularCache.ReaderStatus circularReaderStatus = circularPageFullReader.getStatus();
+                FileMessageCircularCache.Reader circularPageReader = fileRapidQueue.circularCache.createReader(lastOffsetId);
+                FileMessageCircularCache.ReaderStatus circularReaderStatus = circularPageReader.getStatus();
                 if (circularReaderStatus.equals(FileMessageCircularCache.ReaderStatus.GREATER)) {
                     fileRapidQueue.putListener(listenerId, this);
                     shouldReadFile = false;
                 } else if (circularReaderStatus.equals(FileMessageCircularCache.ReaderStatus.WITHIN)) {
-                    for (RapidQueueMessage message : circularPageFullReader) {
+                    for (RapidQueueMessage message : circularPageReader) {
                         if (stop.get()) return;
                         onMessage(message);
                         if (stop.get()) return;

@@ -17,7 +17,7 @@ public class FileRapidQueueTest {
     public void setUp() throws Exception {
         File dataDir = new File("/data/seqTest1");
         FileUtils.deleteDirectory(dataDir);
-        this.fileSequencer = RapidQueue.createFileSequencerBuilder(dataDir).setCachePageSize(10).build();
+        this.fileSequencer = RapidQueue.createRapidQueueBuilder(dataDir).setCachePageSize(10).build();
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             try {
                 fileSequencer.close();

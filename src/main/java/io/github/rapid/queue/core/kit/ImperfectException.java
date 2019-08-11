@@ -1,7 +1,7 @@
 package io.github.rapid.queue.core.kit;
 
 
-public final class ImperfectException extends RuntimeException {
+final public class ImperfectException extends RuntimeException {
     private final int pageId;
 
     private ImperfectException(int pageId, String message, Throwable cause) {

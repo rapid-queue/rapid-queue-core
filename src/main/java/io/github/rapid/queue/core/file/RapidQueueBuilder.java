@@ -1,6 +1,7 @@
 package io.github.rapid.queue.core.file;
 
-import io.github.rapid.queue.core.kit.JUCLock;
+import io.github.rapid.queue.core.RapidQueue;
+import io.github.rapid.queue.core.kit.SimpleLockJUC;
 import io.github.rapid.queue.core.kit.SimpleLock;
 import org.apache.commons.io.FileUtils;
 
@@ -8,10 +9,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-final public class FileRapidQueueBuilder {
+final public class RapidQueueBuilder {
     private final File dataDir;
 
-    private SimpleLock lock = new JUCLock();
+    private SimpleLock lock = new SimpleLockJUC();
     private long lockWaitTimeMillis = TimeUnit.SECONDS.toMillis(3);
     private int maxFrameLength = Math.toIntExact((FileUtils.ONE_KB * 4));
     private int pageSize = Math.toIntExact((FileUtils.ONE_GB + 512 * FileUtils.ONE_MB));
@@ -19,16 +20,16 @@ final public class FileRapidQueueBuilder {
     private int readSize = Math.toIntExact(FileUtils.ONE_MB);
     private int cachePageSize = 1024;
 
-    public FileRapidQueueBuilder(File dataDir) {
+    public RapidQueueBuilder(File dataDir) {
         this.dataDir = dataDir;
     }
 
-    public FileRapidQueueBuilder setLock(SimpleLock lock) {
+    public RapidQueueBuilder setLock(SimpleLock lock) {
         this.lock = lock;
         return this;
     }
 
-    public FileRapidQueueBuilder setLockWaitTimeMillis(long lockWaitTimeMillis) {
+    public RapidQueueBuilder setLockWaitTimeMillis(long lockWaitTimeMillis) {
         if (lockWaitTimeMillis < 0) {
             throw new IllegalArgumentException("lockWaitTimeMillis should >= 0");
         }
@@ -36,33 +37,33 @@ final public class FileRapidQueueBuilder {
         return this;
     }
 
-    public FileRapidQueueBuilder setMaxFrameLength(int maxFrameLength) {
+    public RapidQueueBuilder setMaxFrameLength(int maxFrameLength) {
         this.maxFrameLength = maxFrameLength;
         return this;
     }
 
 
-    public FileRapidQueueBuilder setPageSize(int pageSize) {
+    public RapidQueueBuilder setPageSize(int pageSize) {
         this.pageSize = pageSize;
         return this;
     }
 
-    public FileRapidQueueBuilder setWriteSize(int writeSize) {
+    public RapidQueueBuilder setWriteSize(int writeSize) {
         this.writeSize = writeSize;
         return this;
     }
 
-    public FileRapidQueueBuilder setReadSize(int readSize) {
+    public RapidQueueBuilder setReadSize(int readSize) {
         this.readSize = readSize;
         return this;
     }
 
-    public FileRapidQueueBuilder setCachePageSize(int cachePageSize) {
+    public RapidQueueBuilder setCachePageSize(int cachePageSize) {
         this.cachePageSize = cachePageSize;
         return this;
     }
 
-    public FileRapidQueue build() throws IOException {
+    public RapidQueue build() throws IOException {
         return new FileRapidQueue(lock
                 , lockWaitTimeMillis
                 , dataDir

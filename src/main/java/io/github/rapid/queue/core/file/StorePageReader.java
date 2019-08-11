@@ -10,10 +10,13 @@ import java.io.RandomAccessFile;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.NoSuchElementException;
+import java.util.concurrent.atomic.AtomicLong;
 
-final class StorePageReader implements AutoCloseable, Closeable {
+class StorePageReader implements AutoCloseable, Closeable {
+    private final static AtomicLong ID = new AtomicLong();
+
     final int pageId;
-    private final String readerId;
+    private final long readerId;
     //
     private final StoreMessageHelper storeMessageHelper;
     private Integer pageLength;
@@ -23,13 +26,13 @@ final class StorePageReader implements AutoCloseable, Closeable {
     static StorePageReader createOpened(int pageId, StoreMessageHelper storeMessageHelper, @Nullable Integer pageLength) throws IOException {
         StorePageReader storePageReader = new StorePageReader(pageId, storeMessageHelper, pageLength);
         storePageReader.open();
-        storeMessageHelper.PageReaderCloseHook.put(storePageReader.readerId, storePageReader);
+        storeMessageHelper.pageReader.put(storePageReader.readerId, storePageReader);
         return storePageReader;
     }
 
     private StorePageReader(int pageId, StoreMessageHelper storeMessageHelper, @Nullable Integer pageLength) {
         this.pageId = pageId;
-        this.readerId = UUIDKit.randomUUID();
+        this.readerId = ID.incrementAndGet();
         this.pageLength = pageLength;
         //
         this.storeMessageHelper = storeMessageHelper;
@@ -142,7 +145,7 @@ final class StorePageReader implements AutoCloseable, Closeable {
         try {
             randomAccessFile.close();
         } finally {
-            storeMessageHelper.PageReaderCloseHook.remove(readerId);
+            storeMessageHelper.pageReader.remove(readerId);
         }
     }
 }

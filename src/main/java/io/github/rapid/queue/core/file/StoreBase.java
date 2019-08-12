@@ -4,7 +4,7 @@ import java.math.BigInteger;
 
 abstract class StoreBase {
 
-    final static String EXTENSION = "seq";
+    final static String EXTENSION = "rq";
     final static String EXTENSION_DOT = "." + EXTENSION;
     final static int ZERO_PAGE_ID = 0;
 

@@ -80,6 +80,7 @@ public class FileRapidQueueTest {
                             if (last != atomicInteger.get()) {
                                 System.out.println("ERROR。T:" + finalI + ", E:" + atomicInteger.get() + ", offset:" + eventMessage.getOffset() + " | C:" + body);
                             } else {
+                                System.out.println("T:" + finalI + ", E:" + atomicInteger.get() + ", offset:" + eventMessage.getOffset() + " | C:" + body);
                             }
                             atomicInteger.set(message);
                         }
